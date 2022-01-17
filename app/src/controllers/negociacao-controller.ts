@@ -9,6 +9,7 @@ import { MensagemView } from "../views/mensagem-view.js";
 import { NegociacoesView } from "../views/negociacoes-view.js";
 import { NegociacoesDoDia } from "../interfaces/negociacao-do-dia.js";
 import { NegociacoesService } from "../services/negociacoes-service.js";
+import { imprimir } from "../utils/imprimir.js";
 
 export class NegociacaoController {
   @domInjector('#data')
@@ -44,6 +45,8 @@ export class NegociacaoController {
       return;
     }
     this.negociacoes.adiciona(negociacao);
+    imprimir(negociacao);
+    console.log(this.negociacoes.paraTexto());
     this.atualizaView();
     this.limparFormulario();
 
@@ -52,6 +55,15 @@ export class NegociacaoController {
   public importarDados(): void {
     this.negociacoesService
       .obterNegociacoesDoDia()
+      .then(negociacoesDeHoje => {
+        return negociacoesDeHoje.filter(negociacaoDeHoje => {
+          return !this.negociacoes
+            .lista()
+            .some(negociacao => negociacao
+              .ehIgual(negociacaoDeHoje)
+            );
+        })
+      })
       .then(negociacoesDeHoje => {
         for (let negociacao of negociacoesDeHoje) {
           this.negociacoes.adiciona(negociacao);
